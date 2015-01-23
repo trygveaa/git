@@ -3752,6 +3752,17 @@ int ref_transaction_commit(struct ref_transaction *transaction,
 				    update->refname);
 			goto cleanup;
 		}
+		if (!is_null_sha1(update->new_sha1)) {
+			if (write_ref_sha1(update->lock, update->new_sha1,
+					   update->msg)) {
+				strbuf_addf(err, "Cannot write to the ref lock '%s'.",
+					    update->refname);
+				ret = TRANSACTION_GENERIC_ERROR;
+				goto cleanup;
+			}
+		}
+		/* Do not keep all lock files open at the same time. */
+		close_ref(update->lock);
 	}
 
 	/* Perform updates first so live commits remain referenced */
@@ -3759,9 +3770,7 @@ int ref_transaction_commit(struct ref_transaction *transaction,
 		struct ref_update *update = updates[i];
 
 		if (!is_null_sha1(update->new_sha1)) {
-			if (write_ref_sha1(update->lock, update->new_sha1,
-					   update->msg)
-			    || commit_ref(update->lock, update->new_sha1)) {
+			if (commit_ref(update->lock, update->new_sha1)) {
 				strbuf_addf(err, "Cannot update the ref '%s'.",
 					    update->refname);
 				ret = TRANSACTION_GENERIC_ERROR;
