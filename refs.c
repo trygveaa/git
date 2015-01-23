@@ -2808,6 +2808,20 @@ static int rename_ref_available(const char *oldname, const char *newname)
 static int write_ref_sha1(struct ref_lock *lock, const unsigned char *sha1,
 			  const char *logmsg);
 
+static int close_ref(struct ref_lock *lock)
+{
+	if (close_lock_file(lock->lk))
+		return -1;
+	return 0;
+}
+
+static int commit_ref(struct ref_lock *lock)
+{
+	if (commit_lock_file(lock->lk))
+		return -1;
+	return 0;
+}
+
 int rename_ref(const char *oldrefname, const char *newrefname, const char *logmsg)
 {
 	unsigned char sha1[20], orig_sha1[20];
@@ -2896,20 +2910,6 @@ int rename_ref(const char *oldrefname, const char *newrefname, const char *logms
 			oldrefname, strerror(errno));
 
 	return 1;
-}
-
-static int close_ref(struct ref_lock *lock)
-{
-	if (close_lock_file(lock->lk))
-		return -1;
-	return 0;
-}
-
-static int commit_ref(struct ref_lock *lock)
-{
-	if (commit_lock_file(lock->lk))
-		return -1;
-	return 0;
 }
 
 /*
