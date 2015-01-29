@@ -496,6 +496,10 @@ __git_complete_revlist_file ()
 		cur_="${cur_#*..}"
 		__gitcomp_nl "$(__git_refs)" "$pfx" "$cur_"
 		;;
+	^*)
+		cur_="${cur_#^}"
+		__gitcomp_nl "$(__git_refs)" "^" "$cur_"
+		;;
 	*)
 		__gitcomp_nl "$(__git_refs)"
 		;;
